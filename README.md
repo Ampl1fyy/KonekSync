@@ -1,4 +1,4 @@
-# TrabaHost
+# KonekSync
 
 On-demand staffing platform for the Philippines. Businesses post short-term shifts; workers nearby apply, check in via QR code, and get paid instantly through GCash or Maya.
 
