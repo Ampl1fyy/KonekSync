@@ -6,7 +6,7 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
-export default function WorkerLoginScreen() {
+export default function BusinessLoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export default function WorkerLoginScreen() {
     if (error) {
       Alert.alert('Login Failed', error.message);
     } else {
-      router.replace('/(worker)');
+      router.replace('/(business)');
     }
     setLoading(false);
   }
@@ -40,17 +40,17 @@ export default function WorkerLoginScreen() {
 
           <View className="mb-8">
             <Text className="text-3xl font-bold text-primary-600">KonekSync</Text>
-            <Text className="text-gray-400 text-sm mt-1">Worker Login</Text>
+            <Text className="text-gray-400 text-sm mt-1">Business Login</Text>
           </View>
 
           <Text className="text-2xl font-semibold text-gray-800 mb-6">Welcome back</Text>
 
           <View className="gap-y-4">
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">Email</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">Business Email</Text>
               <TextInput
                 className="border border-gray-300 rounded-xl px-4 py-3 text-base text-gray-800"
-                placeholder="you@example.com"
+                placeholder="you@yourbusiness.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -80,9 +80,9 @@ export default function WorkerLoginScreen() {
           </TouchableOpacity>
 
           <View className="flex-row justify-center mt-8">
-            <Text className="text-gray-500">Don't have an account? </Text>
-            <Link href="/(auth)/register">
-              <Text className="text-primary-600 font-semibold">Sign Up</Text>
+            <Text className="text-gray-500">New to KonekSync? </Text>
+            <Link href={{ pathname: '/(auth)/register', params: { role: 'business' } }}>
+              <Text className="text-primary-600 font-semibold">Create account</Text>
             </Link>
           </View>
         </View>

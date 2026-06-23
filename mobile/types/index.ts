@@ -14,6 +14,7 @@ export interface Profile {
   bio?: string;
   city?: string;
   kyc_status: KYCStatus;
+  kyc_document_url?: string;
   reliability_score: number;
   average_rating: number;
   total_ratings: number;
@@ -122,4 +123,24 @@ export interface Notification {
   data?: Record<string, unknown>;
   is_read: boolean;
   created_at: string;
+}
+
+export interface Message {
+  id: string;
+  application_id: string;
+  sender_id: string;
+  body: string;
+  is_read: boolean;
+  created_at: string;
+  // joined
+  profiles?: Pick<Profile, 'id' | 'full_name'>;
+}
+
+export interface Certification {
+  id: string;
+  worker_id: string;
+  skill_id: number;
+  file_path: string;
+  is_verified: boolean;
+  uploaded_at: string;
 }

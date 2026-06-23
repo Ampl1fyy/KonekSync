@@ -27,7 +27,8 @@ export default function BusinessLayout() {
         name="profile"
         options={{ title: 'Profile', tabBarIcon: ({ focused }) => <Text>{focused ? '🏢' : '🏢'}</Text> }}
       />
-      <Tabs.Screen name="shift/[id]" options={{ href: null }} />
+      <Tabs.Screen name="shift/[id]"           options={{ href: null }} />
+      <Tabs.Screen name="chat/[applicationId]" options={{ href: null }} />
     </Tabs>
   );
 }

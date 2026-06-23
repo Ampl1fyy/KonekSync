@@ -40,14 +40,15 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
   const token = (await Notifications.getExpoPushTokenAsync()).data;
   return token;
+
 }
 
 export async function saveFCMToken(userId: string) {
-  const token = await registerForPushNotifications();
-  if (!token) return;
-
-  await supabase
-    .from('profiles')
-    .update({ fcm_token: token })
-    .eq('id', userId);
+  try {
+    const token = await registerForPushNotifications();
+    if (!token) return;
+    await supabase.from('profiles').update({ fcm_token: token }).eq('id', userId);
+  } catch {
+    // Push notifications not configured — safe to ignore during development
+  }
 }

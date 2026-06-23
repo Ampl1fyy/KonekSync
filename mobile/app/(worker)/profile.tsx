@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
-import type { PaymentMethod } from '../../types';
+import type { KYCStatus, PaymentMethod } from '../../types';
 
 export default function WorkerProfileScreen() {
+  const router = useRouter();
   const { profile, setProfile, signOut } = useAuthStore();
   const [phone, setPhone] = useState(profile?.phone ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
@@ -33,6 +35,12 @@ export default function WorkerProfileScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {/* KYC Banner */}
+        <KYCBanner
+          status={profile?.kyc_status ?? 'unverified'}
+          onPress={() => router.push('/(worker)/kyc')}
+        />
+
         {/* Stats */}
         <View className="flex-row gap-x-3 mb-5">
           <StatCard label="Rating" value={profile?.average_rating?.toFixed(1) ?? '–'} icon="⭐" />
@@ -100,6 +108,18 @@ export default function WorkerProfileScreen() {
           </View>
         </View>
 
+        {/* Skills */}
+        <TouchableOpacity
+          onPress={() => router.push('/(worker)/skills')}
+          className="bg-white rounded-2xl p-4 mb-4 flex-row items-center justify-between border border-gray-100"
+        >
+          <View>
+            <Text className="font-semibold text-gray-800">Skills & Certifications</Text>
+            <Text className="text-xs text-gray-400 mt-0.5">Add skills and upload certificates</Text>
+          </View>
+          <Text className="text-primary-600 font-medium text-sm">Manage →</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           className="bg-primary-600 rounded-xl py-4 items-center mb-3"
           onPress={handleSave}
@@ -121,6 +141,70 @@ export default function WorkerProfileScreen() {
     </View>
   );
 }
+
+// ─── KYC Banner ──────────────────────────────────────────────────────────────
+
+type BannerConfig = {
+  bg: string;
+  border: string;
+  icon: string;
+  title: string;
+  subtitle: string;
+  cta?: string;
+};
+
+const KYC_BANNER: Record<KYCStatus, BannerConfig | null> = {
+  unverified: {
+    bg: 'bg-amber-50', border: 'border-amber-200',
+    icon: '🪪',
+    title: 'Verify your identity',
+    subtitle: 'Unlock higher-paying shifts and build trust with businesses.',
+    cta: 'Verify Now →',
+  },
+  rejected: {
+    bg: 'bg-red-50', border: 'border-red-200',
+    icon: '⚠️',
+    title: 'Verification rejected',
+    subtitle: 'Your documents were not accepted. Please resubmit with clearer photos.',
+    cta: 'Resubmit →',
+  },
+  pending: {
+    bg: 'bg-blue-50', border: 'border-blue-100',
+    icon: '⏳',
+    title: 'Verification pending',
+    subtitle: 'Our team is reviewing your documents (1–2 business days).',
+  },
+  verified: null, // no banner needed — stat card already shows this
+};
+
+function KYCBanner({
+  status, onPress,
+}: {
+  status: KYCStatus;
+  onPress: () => void;
+}) {
+  const config = KYC_BANNER[status];
+  if (!config) return null;
+
+  return (
+    <TouchableOpacity
+      onPress={config.cta ? onPress : undefined}
+      activeOpacity={config.cta ? 0.7 : 1}
+      className={`rounded-2xl p-4 mb-4 border flex-row items-center ${config.bg} ${config.border}`}
+    >
+      <Text className="text-2xl mr-3">{config.icon}</Text>
+      <View className="flex-1">
+        <Text className="font-semibold text-gray-800 text-sm">{config.title}</Text>
+        <Text className="text-xs text-gray-600 mt-0.5 leading-4">{config.subtitle}</Text>
+      </View>
+      {config.cta && (
+        <Text className="text-primary-600 font-semibold text-sm ml-2">{config.cta}</Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+// ─── Stat Card ───────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return (

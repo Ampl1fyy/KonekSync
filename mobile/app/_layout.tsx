@@ -8,7 +8,7 @@ import '../global.css';
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
-  const { session, setSession, fetchProfile } = useAuthStore();
+  const { session, loading, setSession, fetchProfile } = useAuthStore();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -25,17 +25,18 @@ export default function RootLayout() {
   useEffect(() => {
     if (!session) return;
     fetchProfile(session.user.id);
-    saveFCMToken(session.user.id);
+    saveFCMToken(session.user.id).catch(() => {});
   }, [session]);
 
   useEffect(() => {
+    if (loading) return;
     const inAuthGroup = segments[0] === '(auth)';
     if (!session && !inAuthGroup) {
-      router.replace('/(auth)/login');
+      router.replace('/(auth)');
     } else if (session && inAuthGroup) {
       router.replace('/');
     }
-  }, [session, segments]);
+  }, [session, segments, loading]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

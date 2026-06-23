@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "TrabaHost",
-    "slug": "trabahost",
+    "name": "KonekSync",
+    "slug": "koneksync",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "trabahost",
+    "scheme": "koneksync",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -14,11 +14,13 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.trabahost.app",
+      "bundleIdentifier": "com.koneksync.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "TrabaHost needs your location to find nearby shifts.",
-        "NSLocationAlwaysUsageDescription": "TrabaHost uses your location to match you with nearby shifts.",
-        "NSCameraUsageDescription": "TrabaHost needs camera access to scan QR codes for shift check-in."
+        "NSLocationWhenInUseUsageDescription": "KonekSync needs your location to find nearby shifts.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "KonekSync tracks your location only during active shift hours (from check-in to check-out) to verify attendance.",
+        "NSLocationAlwaysUsageDescription": "KonekSync tracks your location only during active shift hours to verify attendance.",
+        "NSCameraUsageDescription": "KonekSync needs camera access to scan QR codes for shift check-in.",
+        "UIBackgroundModes": ["location", "fetch"]
       }
     },
     "android": {
@@ -26,13 +28,16 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#4F46E5"
       },
-      "package": "com.trabahost.app",
+      "package": "com.koneksync.app",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
         "CAMERA",
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "googleServicesFile": "./google-services.json"
     },
@@ -50,11 +55,18 @@
           "backgroundColor": "#4F46E5"
         }
       ],
-      "expo-location",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "KonekSync tracks your location only during active shift hours (check-in to check-out) to verify attendance. No tracking occurs outside of shifts.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow TrabaHost to access your camera for QR check-in."
+          "cameraPermission": "Allow KonekSync to access your camera for QR check-in."
         }
       ],
       [

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCurrentLocation } from '../lib/maps';
 import type { Shift } from '../types';
@@ -49,23 +49,27 @@ export function useNearbyShifts(radiusMeters = 5000) {
 }
 
 export function useMyApplications(workerId: string) {
-  const [applications, setApplications] = useState([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  // Stable ref so refetch doesn't change identity on every render
+  const workerIdRef = useRef(workerId);
+  workerIdRef.current = workerId;
 
-  useEffect(() => {
-    if (!workerId) return;
-    supabase
+  const fetch = useCallback(async () => {
+    if (!workerIdRef.current) return;
+    setLoading(true);
+    const { data } = await supabase
       .from('applications')
       .select('*, shifts(*, businesses(*))')
-      .eq('worker_id', workerId)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setApplications(data ?? []);
-        setLoading(false);
-      });
-  }, [workerId]);
+      .eq('worker_id', workerIdRef.current)
+      .order('created_at', { ascending: false });
+    setApplications(data ?? []);
+    setLoading(false);
+  }, []);
 
-  return { applications, loading };
+  useEffect(() => { fetch(); }, [fetch]);
+
+  return { applications, loading, refetch: fetch };
 }
 
 export function useBusinessShifts(businessId: string) {

@@ -1,6 +1,8 @@
 import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useNearbyShifts } from '../../hooks/useShifts';
+import { useNotifications } from '../../hooks/useNotifications';
+import { useAuthStore } from '../../store/authStore';
 import { formatPHP } from '../../lib/payments';
 import { formatDistanceToNow } from 'date-fns';
 import type { Shift } from '../../types';
@@ -55,8 +57,10 @@ function ShiftCard({ shift, onPress }: { shift: Shift; onPress: () => void }) {
 }
 
 export default function WorkerFeedScreen() {
-  const router = useRouter();
+  const router   = useRouter();
+  const { profile } = useAuthStore();
   const { shifts, loading, error, refetch } = useNearbyShifts(5000);
+  const { unreadCount } = useNotifications(profile?.id ?? '');
 
   if (error) {
     return (
@@ -69,9 +73,24 @@ export default function WorkerFeedScreen() {
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="bg-white px-5 pt-14 pb-4 border-b border-gray-100">
-        <Text className="text-2xl font-bold text-gray-800">Nearby Shifts</Text>
-        <Text className="text-gray-500 text-sm mt-1">Within 5km of your location</Text>
+      <View className="bg-white px-5 pt-14 pb-4 border-b border-gray-100 flex-row items-end justify-between">
+        <View>
+          <Text className="text-2xl font-bold text-gray-800">Nearby Shifts</Text>
+          <Text className="text-gray-500 text-sm mt-1">Within 5km of your location</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => router.push('/(worker)/notifications')}
+          className="mb-1 relative"
+        >
+          <Text className="text-2xl">🔔</Text>
+          {unreadCount > 0 && (
+            <View className="absolute -top-1 -right-1 bg-red-500 rounded-full min-w-4 h-4 items-center justify-center px-0.5">
+              <Text className="text-white text-xs font-bold">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       <FlatList

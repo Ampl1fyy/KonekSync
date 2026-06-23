@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { startShiftTracking, stopShiftTracking } from '../lib/locationTracking';
 
 export default function QRScanScreen() {
   const router = useRouter();
@@ -57,11 +58,19 @@ export default function QRScanScreen() {
       )
       .eq('id', app.id);
 
+    // Start or stop GPS tracking in response to the check-in/out event.
+    // These are fire-and-forget — tracking state must never block the UI flow.
+    if (isCheckIn) {
+      startShiftTracking(app.id, profile.id);
+    } else {
+      stopShiftTracking();
+    }
+
     Alert.alert(
       isCheckIn ? 'Checked In!' : 'Checked Out!',
       isCheckIn
-        ? `You have successfully checked in. Good luck!`
-        : `Shift complete! Your payment will be processed shortly.`,
+        ? 'You have successfully checked in. Good luck!'
+        : 'Shift complete! Your payment will be processed shortly.',
       [{ text: 'OK', onPress: () => router.back() }]
     );
   }

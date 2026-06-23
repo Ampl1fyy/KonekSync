@@ -3,17 +3,19 @@ import {
   View, Text, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, Alert, ScrollView,
 } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import type { UserRole } from '../../types';
 
 export default function RegisterScreen() {
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState<UserRole>('worker');
+  const [role, setRole] = useState<UserRole>((roleParam as UserRole) || 'worker');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleRegister() {
     if (!fullName || !email || !password) {
@@ -24,14 +26,17 @@ export default function RegisterScreen() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { full_name: fullName, role, phone },
-      },
+      options: { data: { full_name: fullName, role, phone } },
     });
-    if (error) Alert.alert('Registration Failed', error.message);
-    else Alert.alert('Success', 'Account created! Please check your email to verify.');
+    if (error) {
+      Alert.alert('Registration Failed', error.message);
+    } else {
+      Alert.alert('Success', 'Account created! Please check your email to verify.');
+    }
     setLoading(false);
   }
+
+  const backRoute = role === 'business' ? '/(auth)/business-login' : '/(auth)/login';
 
   return (
     <KeyboardAvoidingView
@@ -40,10 +45,13 @@ export default function RegisterScreen() {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View className="flex-1 px-6 pt-16 pb-8">
-          <Text className="text-2xl font-semibold text-gray-800 mb-2">Create account</Text>
-          <Text className="text-gray-500 mb-8">Join TrabaHost today.</Text>
+          <TouchableOpacity className="mb-8" onPress={() => router.back()}>
+            <Text className="text-primary-600 text-base">← Back</Text>
+          </TouchableOpacity>
 
-          {/* Role selector */}
+          <Text className="text-2xl font-semibold text-gray-800 mb-2">Create account</Text>
+          <Text className="text-gray-500 mb-8">Join KonekSync today.</Text>
+
           <Text className="text-sm font-medium text-gray-700 mb-2">I am a...</Text>
           <View className="flex-row gap-x-3 mb-5">
             {(['worker', 'business'] as UserRole[]).map((r) => (
@@ -51,9 +59,7 @@ export default function RegisterScreen() {
                 key={r}
                 onPress={() => setRole(r)}
                 className={`flex-1 py-3 rounded-xl border items-center ${
-                  role === r
-                    ? 'bg-primary-600 border-primary-600'
-                    : 'border-gray-300'
+                  role === r ? 'bg-primary-600 border-primary-600' : 'border-gray-300'
                 }`}
               >
                 <Text className={`font-medium capitalize ${role === r ? 'text-white' : 'text-gray-700'}`}>
@@ -118,7 +124,7 @@ export default function RegisterScreen() {
 
           <View className="flex-row justify-center mt-6">
             <Text className="text-gray-500">Already have an account? </Text>
-            <Link href="/(auth)/login">
+            <Link href={backRoute}>
               <Text className="text-primary-600 font-semibold">Sign In</Text>
             </Link>
           </View>

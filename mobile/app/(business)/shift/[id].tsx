@@ -4,7 +4,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 import { supabase } from '../../../lib/supabase';
 import { initiatePayment, formatPHP, computeWages } from '../../../lib/payments';
+import { hasRated, submitRating } from '../../../lib/ratings';
+import { computeApplicantScore, getScoreLabel } from '../../../lib/scoring';
 import { useAuthStore } from '../../../store/authStore';
+import RatingModal from '../../../components/RatingModal';
 import type { Application, Shift } from '../../../types';
 
 export default function ManageShiftScreen() {
@@ -15,6 +18,7 @@ export default function ManageShiftScreen() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState<string | null>(null);
+  const [ratingApp, setRatingApp] = useState<Application | null>(null);
 
   async function load() {
     const [{ data: s }, { data: apps }] = await Promise.all([
@@ -26,7 +30,13 @@ export default function ManageShiftScreen() {
         .order('created_at'),
     ]);
     setShift(s);
-    setApplications(apps ?? []);
+    // Sort applicants by match score descending so best fits appear first
+    const sorted = (apps ?? []).sort((a, b) => {
+      const scoreA = (a as any).profiles ? computeApplicantScore((a as any).profiles) : 0;
+      const scoreB = (b as any).profiles ? computeApplicantScore((b as any).profiles) : 0;
+      return scoreB - scoreA;
+    });
+    setApplications(sorted);
     setLoading(false);
   }
 
@@ -40,6 +50,16 @@ export default function ManageShiftScreen() {
   async function handleReject(appId: string) {
     await supabase.from('applications').update({ status: 'rejected' }).eq('id', appId);
     load();
+  }
+
+  async function handleRateWorker(app: Application) {
+    if (!profile) return;
+    const alreadyRated = await hasRated(app.id, profile.id);
+    if (alreadyRated) {
+      Alert.alert('Already Rated', 'You have already rated this worker.');
+      return;
+    }
+    setRatingApp(app);
   }
 
   async function handlePay(app: Application) {
@@ -121,13 +141,24 @@ export default function ManageShiftScreen() {
           const worker = (item as any).profiles;
           const isCheckedOut = !!item.checked_out_at;
           const isCheckedIn = !!item.checked_in_at;
+          const score = worker ? computeApplicantScore(worker) : null;
+          const scoreLabel = score !== null ? getScoreLabel(score) : null;
 
           return (
             <View className="bg-white rounded-2xl p-4 mb-3 border border-gray-100">
               <View className="flex-row justify-between items-start mb-2">
-                <View>
-                  <Text className="font-semibold text-gray-800">{worker?.full_name ?? 'Worker'}</Text>
-                  <Text className="text-xs text-gray-400">
+                <View className="flex-1 mr-2">
+                  <View className="flex-row items-center gap-x-2 flex-wrap">
+                    <Text className="font-semibold text-gray-800">{worker?.full_name ?? 'Worker'}</Text>
+                    {scoreLabel && (
+                      <View className={`rounded-full px-2 py-0.5 ${scoreLabel.bg}`}>
+                        <Text className={`text-xs font-medium ${scoreLabel.text}`}>
+                          {scoreLabel.label} · {score}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className="text-xs text-gray-400 mt-0.5">
                     ⭐ {worker?.average_rating?.toFixed(1) ?? 'N/A'} ·
                     Reliability {worker?.reliability_score?.toFixed(1) ?? 'N/A'}
                   </Text>
@@ -141,7 +172,7 @@ export default function ManageShiftScreen() {
                 </Text>
               )}
 
-              <View className="flex-row gap-x-2 mt-2">
+              <View className="flex-row gap-x-2 mt-2 flex-wrap gap-y-2">
                 {item.status === 'pending' && (
                   <>
                     <TouchableOpacity
@@ -158,16 +189,32 @@ export default function ManageShiftScreen() {
                     </TouchableOpacity>
                   </>
                 )}
-                {item.status === 'approved' && isCheckedOut && (
+                {item.status === 'approved' && (
                   <TouchableOpacity
-                    className="flex-1 bg-green-600 py-2.5 rounded-xl items-center"
-                    onPress={() => handlePay(item)}
-                    disabled={paying === item.id}
+                    className="flex-1 border border-primary-200 bg-primary-50 py-2.5 rounded-xl items-center"
+                    onPress={() => router.push(`/(business)/chat/${item.id}`)}
                   >
-                    <Text className="text-white font-medium text-sm">
-                      {paying === item.id ? 'Processing...' : 'Release Payment'}
-                    </Text>
+                    <Text className="text-primary-600 font-medium text-sm">💬 Message</Text>
                   </TouchableOpacity>
+                )}
+                {item.status === 'approved' && isCheckedOut && (
+                  <>
+                    <TouchableOpacity
+                      className="flex-1 bg-green-600 py-2.5 rounded-xl items-center"
+                      onPress={() => handlePay(item)}
+                      disabled={paying === item.id}
+                    >
+                      <Text className="text-white font-medium text-sm">
+                        {paying === item.id ? 'Processing...' : 'Release Payment'}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="border border-primary-600 py-2.5 px-3 rounded-xl items-center"
+                      onPress={() => handleRateWorker(item)}
+                    >
+                      <Text className="text-primary-600 font-medium text-sm">⭐ Rate</Text>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </View>
@@ -178,6 +225,26 @@ export default function ManageShiftScreen() {
             <Text className="text-gray-500">No applicants yet.</Text>
           </View>
         }
+      />
+
+      <RatingModal
+        visible={ratingApp !== null}
+        subjectName={(ratingApp as any)?.profiles?.full_name ?? 'Worker'}
+        rateeLabel="Worker"
+        onSubmit={async (score, comment) => {
+          if (!ratingApp || !profile) return;
+          const { error } = await submitRating({
+            applicationId: ratingApp.id,
+            raterId:       profile.id,
+            ratedId:       ratingApp.worker_id,
+            score,
+            comment,
+          });
+          setRatingApp(null);
+          if (error) Alert.alert('Error', error);
+          else Alert.alert('Thank you!', 'Your rating has been submitted.');
+        }}
+        onDismiss={() => setRatingApp(null)}
       />
     </View>
   );
