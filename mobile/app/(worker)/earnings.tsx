@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
 import { formatPHP } from '../../lib/payments';
@@ -7,6 +8,7 @@ import { format } from 'date-fns';
 import type { Transaction } from '../../types';
 
 export default function EarningsScreen() {
+  const router      = useRouter();
   const { profile } = useAuthStore();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +37,11 @@ export default function EarningsScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <View className="bg-white px-5 pt-14 pb-4 border-b border-gray-100">
+      <View className="bg-white px-5 pt-14 pb-4 border-b border-gray-100 flex-row items-end justify-between">
         <Text className="text-2xl font-bold text-gray-800">Earnings</Text>
+        <TouchableOpacity onPress={() => router.push('/(worker)/fee-info' as any)} className="mb-1">
+          <Text className="text-sm text-primary-600 font-medium">How payouts work →</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Summary */}
@@ -60,7 +65,7 @@ export default function EarningsScreen() {
             <View>
               <Text className="font-medium text-gray-800 capitalize">{item.payment_method} payout</Text>
               <Text className="text-xs text-gray-400 mt-0.5">
-                {format(new Date(item.created_at), 'MMM d, yyyy')}
+                {format(new Date(item.initiated_at), 'MMM d, yyyy')}
               </Text>
               {item.payment_reference && (
                 <Text className="text-xs text-gray-400">Ref: {item.payment_reference}</Text>

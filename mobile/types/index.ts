@@ -4,6 +4,15 @@ export type ApplicationStatus = 'pending' | 'approved' | 'rejected' | 'withdrawn
 export type TransactionStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
 export type PaymentMethod = 'maya' | 'gcash';
 export type KYCStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
+export type Sector =
+  | 'Retail'
+  | 'Logistics'
+  | 'Food & Beverage'
+  | 'Healthcare'
+  | 'Administrative'
+  | 'Catering'
+  | 'Events'
+  | 'Cleaning';
 
 export interface Profile {
   id: string;
@@ -20,6 +29,7 @@ export interface Profile {
   total_ratings: number;
   e_wallet_number?: string;
   e_wallet_provider?: PaymentMethod;
+  fee_waiver_count: number;
   is_active: boolean;
   created_at: string;
 }
@@ -56,6 +66,7 @@ export interface Shift {
   time_start: string;
   time_end: string;
   status: ShiftStatus;
+  sector?: Sector;
   address: string;
   qr_code?: string;
   created_at: string;
@@ -143,4 +154,26 @@ export interface Certification {
   file_path: string;
   is_verified: boolean;
   uploaded_at: string;
+}
+
+export interface InsuranceCoverage {
+  id: string;
+  application_id: string;
+  worker_id: string;
+  premium_paid: number;
+  coverage_amount: number;
+  provider: string;
+  status: 'active' | 'claimed' | 'expired';
+  opted_in_at: string;
+}
+
+export interface IncidentReport {
+  id: string;
+  application_id: string;
+  worker_id: string;
+  incident_type: string;
+  description: string;
+  status: 'submitted' | 'under_review' | 'resolved' | 'rejected';
+  resolution_note?: string;
+  submitted_at: string;
 }

@@ -73,21 +73,24 @@ export default function ManageShiftScreen() {
       return;
     }
 
-    const hours = (
+    const hours  = (
       (new Date(app.checked_out_at!).getTime() - new Date(app.checked_in_at!).getTime()) / 3600000
     );
-    const wages = computeWages(shift.hourly_rate, hours);
+    const waiver = (worker.fee_waiver_count ?? 0) > 0;
+    const wages  = computeWages(shift.hourly_rate, hours, waiver);
+    const feeNote = waiver
+      ? `${formatPHP(wages.gross)} − ₱0 fee (🎁 zero-fee waiver)`
+      : `${formatPHP(wages.gross)} − ${formatPHP(wages.platformFee)} platform fee`;
 
     Alert.alert(
       'Confirm Payment',
-      `Pay ${worker.full_name} ${formatPHP(wages.net)} via ${worker.e_wallet_provider.toUpperCase()}?\n(${formatPHP(wages.gross)} - ${formatPHP(wages.platformFee)} platform fee)`,
+      `Pay ${worker.full_name} ${formatPHP(wages.net)} via ${worker.e_wallet_provider.toUpperCase()}?\n${feeNote}`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Pay Now',
           onPress: async () => {
             setPaying(app.id);
-            const biz = (shift as any).businesses;
             const result = await initiatePayment({
               applicationId: app.id,
               workerId: app.worker_id,
@@ -95,8 +98,15 @@ export default function ManageShiftScreen() {
               amount: wages.gross,
               method: worker.e_wallet_provider,
               workerWalletNumber: worker.e_wallet_number,
-              description: `TrabaHost: ${shift.title}`,
+              description: `KonekSync: ${shift.title}`,
             });
+            // Consume fee waiver on success
+            if (result.success && waiver) {
+              await supabase
+                .from('profiles')
+                .update({ fee_waiver_count: worker.fee_waiver_count - 1 })
+                .eq('id', app.worker_id);
+            }
             setPaying(null);
             if (result.success) {
               Alert.alert('Payment Sent!', `Reference: ${result.paymentIntentId}`);
@@ -192,7 +202,7 @@ export default function ManageShiftScreen() {
                 {item.status === 'approved' && (
                   <TouchableOpacity
                     className="flex-1 border border-primary-200 bg-primary-50 py-2.5 rounded-xl items-center"
-                    onPress={() => router.push(`/(business)/chat/${item.id}`)}
+                    onPress={() => router.push(`/(business)/chat/${item.id}` as any)}
                   >
                     <Text className="text-primary-600 font-medium text-sm">💬 Message</Text>
                   </TouchableOpacity>

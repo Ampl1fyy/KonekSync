@@ -58,7 +58,7 @@ export default function BusinessPaymentsScreen() {
             <View>
               <Text className="font-medium text-gray-800 capitalize">{item.payment_method} payout</Text>
               <Text className="text-xs text-gray-400 mt-0.5">
-                {format(new Date(item.created_at), 'MMM d, yyyy h:mm a')}
+                {format(new Date(item.initiated_at), 'MMM d, yyyy h:mm a')}
               </Text>
               {item.payment_reference && (
                 <Text className="text-xs text-gray-400">Ref: {item.payment_reference}</Text>

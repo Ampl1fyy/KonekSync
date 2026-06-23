@@ -98,7 +98,7 @@ export default function MyShiftsScreen() {
               {item.status === 'approved' && (
                 <TouchableOpacity
                   className="mt-3 border border-primary-200 rounded-xl py-2.5 items-center bg-primary-50"
-                  onPress={() => router.push(`/(worker)/chat/${item.id}`)}
+                  onPress={() => router.push(`/(worker)/chat/${item.id}` as any)}
                 >
                   <Text className="text-primary-600 font-medium text-sm">💬 Message Business</Text>
                 </TouchableOpacity>
@@ -124,20 +124,28 @@ export default function MyShiftsScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* Post-shift actions: rate + dispute */}
+              {/* Post-shift actions: rate + dispute + incident report */}
               {showPostShift && (
-                <View className="flex-row gap-x-2 mt-3">
+                <View className="gap-y-2 mt-3">
+                  <View className="flex-row gap-x-2">
+                    <TouchableOpacity
+                      className="flex-1 border border-primary-600 rounded-xl py-2.5 items-center"
+                      onPress={() => handleOpenRating(item)}
+                    >
+                      <Text className="text-primary-600 font-medium text-sm">⭐ Rate Shift</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-1 border border-red-300 rounded-xl py-2.5 items-center"
+                      onPress={() => setDisputeApp(item)}
+                    >
+                      <Text className="text-red-500 font-medium text-sm">⚠ Report Issue</Text>
+                    </TouchableOpacity>
+                  </View>
                   <TouchableOpacity
-                    className="flex-1 border border-primary-600 rounded-xl py-2.5 items-center"
-                    onPress={() => handleOpenRating(item)}
+                    className="border border-blue-200 bg-blue-50 rounded-xl py-2.5 items-center"
+                    onPress={() => router.push({ pathname: '/(worker)/incident-report', params: { applicationId: item.id } } as any)}
                   >
-                    <Text className="text-primary-600 font-medium text-sm">⭐ Rate Shift</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    className="flex-1 border border-red-300 rounded-xl py-2.5 items-center"
-                    onPress={() => setDisputeApp(item)}
-                  >
-                    <Text className="text-red-500 font-medium text-sm">⚠ Report Issue</Text>
+                    <Text className="text-blue-600 font-medium text-sm">🩹 File Insurance Incident</Text>
                   </TouchableOpacity>
                 </View>
               )}

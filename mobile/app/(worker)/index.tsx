@@ -1,11 +1,17 @@
-import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, Text, FlatList, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useNearbyShifts } from '../../hooks/useShifts';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useAuthStore } from '../../store/authStore';
 import { formatPHP } from '../../lib/payments';
 import { formatDistanceToNow } from 'date-fns';
-import type { Shift } from '../../types';
+import type { Shift, Sector } from '../../types';
+
+const SECTORS: Sector[] = [
+  'Retail', 'Logistics', 'Food & Beverage', 'Healthcare',
+  'Administrative', 'Catering', 'Events', 'Cleaning',
+];
 
 function ShiftCard({ shift, onPress }: { shift: Shift; onPress: () => void }) {
   const hoursTotal = (
@@ -61,6 +67,11 @@ export default function WorkerFeedScreen() {
   const { profile } = useAuthStore();
   const { shifts, loading, error, refetch } = useNearbyShifts(5000);
   const { unreadCount } = useNotifications(profile?.id ?? '');
+  const [activeSector, setActiveSector] = useState<Sector | null>(null);
+
+  const displayedShifts = activeSector
+    ? shifts.filter((s) => s.sector === activeSector)
+    : shifts;
 
   if (error) {
     return (
@@ -79,7 +90,7 @@ export default function WorkerFeedScreen() {
           <Text className="text-gray-500 text-sm mt-1">Within 5km of your location</Text>
         </View>
         <TouchableOpacity
-          onPress={() => router.push('/(worker)/notifications')}
+          onPress={() => router.push('/(worker)/notifications' as any)}
           className="mb-1 relative"
         >
           <Text className="text-2xl">🔔</Text>
@@ -93,8 +104,40 @@ export default function WorkerFeedScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Sector filter chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10, gap: 8 }}
+        className="bg-white border-b border-gray-100"
+      >
+        <TouchableOpacity
+          onPress={() => setActiveSector(null)}
+          className={`px-3 py-1.5 rounded-full border ${
+            activeSector === null ? 'bg-primary-600 border-primary-600' : 'border-gray-300'
+          }`}
+        >
+          <Text className={`text-xs font-medium ${activeSector === null ? 'text-white' : 'text-gray-600'}`}>
+            All
+          </Text>
+        </TouchableOpacity>
+        {SECTORS.map((s) => (
+          <TouchableOpacity
+            key={s}
+            onPress={() => setActiveSector(activeSector === s ? null : s)}
+            className={`px-3 py-1.5 rounded-full border ${
+              activeSector === s ? 'bg-primary-600 border-primary-600' : 'border-gray-300'
+            }`}
+          >
+            <Text className={`text-xs font-medium ${activeSector === s ? 'text-white' : 'text-gray-600'}`}>
+              {s}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
       <FlatList
-        data={shifts}
+        data={displayedShifts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16 }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}

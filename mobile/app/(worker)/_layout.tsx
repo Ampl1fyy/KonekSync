@@ -43,11 +43,14 @@ export default function WorkerLayout() {
           tabBarIcon: ({ focused }) => <TabIcon label="👤" active={focused} />,
         }}
       />
+      {/* Hidden screens — navigated to programmatically */}
       <Tabs.Screen name="shift/[id]"           options={{ href: null }} />
       <Tabs.Screen name="kyc"                  options={{ href: null }} />
       <Tabs.Screen name="skills"               options={{ href: null }} />
       <Tabs.Screen name="notifications"        options={{ href: null }} />
       <Tabs.Screen name="chat/[applicationId]" options={{ href: null }} />
+      <Tabs.Screen name="fee-info"             options={{ href: null }} />
+      <Tabs.Screen name="incident-report"      options={{ href: null }} />
     </Tabs>
   );
 }

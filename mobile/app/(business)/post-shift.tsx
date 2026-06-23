@@ -5,7 +5,12 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { supabase } from '../../lib/supabase';
-import type { Skill } from '../../types';
+import type { Skill, Sector } from '../../types';
+
+const SECTORS: Sector[] = [
+  'Retail', 'Logistics', 'Food & Beverage', 'Healthcare',
+  'Administrative', 'Catering', 'Events', 'Cleaning',
+];
 
 export default function PostShiftScreen() {
   const router = useRouter();
@@ -16,6 +21,7 @@ export default function PostShiftScreen() {
     description: '',
     role_required: '',
     skill_id: null as number | null,
+    sector: null as Sector | null,
     slots: '1',
     hourly_rate: '',
     time_start: '',
@@ -63,6 +69,7 @@ export default function PostShiftScreen() {
       address,
       location: biz.location,
       qr_code: qrCode,
+      sector: form.sector,
     });
 
     if (error) Alert.alert('Error', error.message);
@@ -103,6 +110,26 @@ export default function PostShiftScreen() {
 
         <View className="bg-white rounded-2xl p-4 gap-y-4 mb-4">
           <Field label="Location Address *" value={form.address} onChangeText={(v) => update('address', v)} placeholder="123 Main St, Quezon City" />
+        </View>
+
+        {/* Sector selector */}
+        <View className="bg-white rounded-2xl p-4 mb-4">
+          <Text className="text-sm font-medium text-gray-700 mb-2">Industry Sector (optional)</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {SECTORS.map((s) => (
+              <TouchableOpacity
+                key={s}
+                onPress={() => update('sector', form.sector === s ? null : s)}
+                className={`px-3 py-1.5 rounded-full border ${
+                  form.sector === s ? 'bg-primary-600 border-primary-600' : 'border-gray-300'
+                }`}
+              >
+                <Text className={`text-xs font-medium ${form.sector === s ? 'text-white' : 'text-gray-700'}`}>
+                  {s}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Skill selector */}

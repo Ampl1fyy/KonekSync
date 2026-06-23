@@ -38,7 +38,7 @@ export default function WorkerProfileScreen() {
         {/* KYC Banner */}
         <KYCBanner
           status={profile?.kyc_status ?? 'unverified'}
-          onPress={() => router.push('/(worker)/kyc')}
+          onPress={() => router.push('/(worker)/kyc' as any)}
         />
 
         {/* Stats */}
@@ -110,7 +110,7 @@ export default function WorkerProfileScreen() {
 
         {/* Skills */}
         <TouchableOpacity
-          onPress={() => router.push('/(worker)/skills')}
+          onPress={() => router.push('/(worker)/skills' as any)}
           className="bg-white rounded-2xl p-4 mb-4 flex-row items-center justify-between border border-gray-100"
         >
           <View>

@@ -57,13 +57,19 @@ export function formatPHP(amount: number): string {
   }).format(amount);
 }
 
-export function computeWages(hourlyRate: number, hoursWorked: number): {
+export function computeWages(
+  hourlyRate: number,
+  hoursWorked: number,
+  feeWaiverActive = false,
+): {
   gross: number;
   platformFee: number;
   net: number;
+  feeWaiverActive: boolean;
 } {
   const gross = hourlyRate * hoursWorked;
-  const platformFee = parseFloat((gross * 0.05).toFixed(2));  // 5% fee
+  const feeRate = feeWaiverActive ? 0 : 0.05;
+  const platformFee = parseFloat((gross * feeRate).toFixed(2));
   const net = parseFloat((gross - platformFee).toFixed(2));
-  return { gross, platformFee, net };
+  return { gross, platformFee, net, feeWaiverActive };
 }
