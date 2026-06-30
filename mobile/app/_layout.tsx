@@ -8,7 +8,7 @@ import '../global.css';
 export default function RootLayout() {
   const router = useRouter();
   const segments = useSegments();
-  const { session, loading, setSession, fetchProfile } = useAuthStore();
+  const { session, profile, loading, setSession, fetchProfile } = useAuthStore();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,9 +34,15 @@ export default function RootLayout() {
     if (!session && !inAuthGroup) {
       router.replace('/(auth)');
     } else if (session && inAuthGroup) {
-      router.replace('/');
+      // Wait for profile to load so we can route to the correct group
+      if (!profile) return;
+      if (profile.role === 'business') {
+        router.replace('/(business)');
+      } else {
+        router.replace('/(worker)');
+      }
     }
-  }, [session, segments, loading]);
+  }, [session, segments, loading, profile]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

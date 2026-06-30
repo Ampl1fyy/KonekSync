@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabaseAdmin as supabase } from '../lib/supabase';
 
 interface Stats {
   totalUsers: number;
@@ -16,39 +15,17 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    async function load() {
-      const [
-        { count: totalUsers },
-        { count: totalWorkers },
-        { count: totalBusinesses },
-        { count: openShifts },
-        { count: completedShifts },
-        { count: openDisputes },
-        { data: txnData },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'worker'),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'business'),
-        supabase.from('shifts').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-        supabase.from('shifts').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('disputes').select('*', { count: 'exact', head: true }).eq('status', 'open'),
-        supabase.from('transactions').select('net_amount').eq('status', 'completed'),
-      ]);
-
-      const totalRevenue = (txnData ?? []).reduce((s, t) => s + t.net_amount * 0.05, 0);
-
-      setStats({
-        totalUsers: totalUsers ?? 0,
-        totalWorkers: totalWorkers ?? 0,
-        totalBusinesses: totalBusinesses ?? 0,
-        openShifts: openShifts ?? 0,
-        completedShifts: completedShifts ?? 0,
-        openDisputes: openDisputes ?? 0,
-        totalTransactions: (txnData ?? []).length,
-        totalRevenue,
-      });
-    }
-    load();
+    // Demo data for presentation
+    setStats({
+      totalUsers: 8,
+      totalWorkers: 4,
+      totalBusinesses: 3,
+      openShifts: 6,
+      completedShifts: 2,
+      openDisputes: 1,
+      totalTransactions: 2,
+      totalRevenue: 86.50, // 5% platform fee on ₱1,730 total paid out
+    });
   }, []);
 
   return (

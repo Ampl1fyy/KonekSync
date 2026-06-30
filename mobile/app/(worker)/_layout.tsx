@@ -10,7 +10,7 @@ export default function WorkerLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#4F46E5',
+        tabBarActiveTintColor: '#3D2C8D',
         tabBarInactiveTintColor: '#9ca3af',
         tabBarStyle: { paddingBottom: 6, height: 60 },
       }}

@@ -7,5 +7,9 @@ const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY as str
 // Use for auth (signIn, signOut, getSession)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Use for admin DB queries that need to bypass RLS
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Use for admin DB queries that need to bypass RLS.
+// auth.persistSession:false ensures this client always uses the service role key
+// and never picks up the logged-in user's JWT from localStorage.
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});

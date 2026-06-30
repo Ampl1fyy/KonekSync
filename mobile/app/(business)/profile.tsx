@@ -8,11 +8,24 @@ import type { Business } from '../../types';
 export default function BusinessProfileScreen() {
   const { profile, signOut } = useAuthStore();
   const [business, setBusiness] = useState<Business | null>(null);
-  const [form, setForm] = useState({ name: '', description: '', industry: '', address: '', city: '' });
   const [saving, setSaving] = useState(false);
+
+  function demoBizForProfile(name: string | undefined) {
+    if (!name) return { name: '', description: '', industry: '', address: '', city: '' };
+    if (name.includes('Ayala') || name.includes('Patricia'))
+      return { name: 'Ayala Malls Events',   industry: 'Retail & Events',  description: 'Premier mall events and retail operations across Makati City.',        address: 'Ayala Center, Makati City', city: 'Makati' };
+    if (name.includes('Villanueva') || name.includes('Marco') || name.includes('Greenbelt'))
+      return { name: 'Greenbelt Dining Co.', industry: 'Food & Beverage',  description: 'Upscale dining and F&B operations at Greenbelt 5, Makati.',           address: 'Greenbelt 5, Makati City',  city: 'Makati' };
+    if (name.includes('Santos') || name.includes('Jose') || name.includes('BGC'))
+      return { name: 'BGC Events Inc.',      industry: 'Events',           description: 'Corporate and lifestyle events management in Bonifacio Global City.', address: '9th Ave, BGC, Taguig City', city: 'BGC'    };
+    return { name: '', description: '', industry: '', address: '', city: '' };
+  }
+
+  const [form, setForm] = useState(() => demoBizForProfile(profile?.full_name));
 
   useEffect(() => {
     if (!profile) return;
+    setForm(demoBizForProfile(profile.full_name));
     supabase.from('businesses').select('*').eq('owner_id', profile.id).maybeSingle()
       .then(({ data }) => {
         setBusiness(data);
@@ -55,6 +68,14 @@ export default function BusinessProfileScreen() {
     <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View className="bg-white px-5 pt-14 pb-4 border-b border-gray-100">
         <Text className="text-2xl font-bold text-gray-800">Business Profile</Text>
+        {form.name ? (
+          <View className="flex-row items-center mt-1 gap-x-2">
+            <Text className="text-gray-500 text-sm">{form.name}</Text>
+            <View className="bg-secondary-500 rounded-full px-2 py-0.5">
+              <Text className="text-white text-xs font-semibold">✓ Verified</Text>
+            </View>
+          </View>
+        ) : null}
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">

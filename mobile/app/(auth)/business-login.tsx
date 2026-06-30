@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  KeyboardAvoidingView, Platform, Alert, ScrollView,
+  KeyboardAvoidingView, Platform, Alert, ScrollView, Image,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -38,7 +38,12 @@ export default function BusinessLoginScreen() {
             <Text className="text-primary-600 text-base">← Back</Text>
           </TouchableOpacity>
 
-          <View className="mb-8">
+          <View className="mb-8 items-center">
+            <Image
+              source={require('../../assets/logo.png')}
+              style={{ width: 64, height: 64, marginBottom: 8 }}
+              resizeMode="contain"
+            />
             <Text className="text-3xl font-bold text-primary-600">KonekSync</Text>
             <Text className="text-gray-400 text-sm mt-1">Business Login</Text>
           </View>

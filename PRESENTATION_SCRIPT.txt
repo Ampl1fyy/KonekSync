@@ -1,0 +1,355 @@
+═══════════════════════════════════════════════════════════════════════════════
+  KONEKSYNC — PRESENTATION SCRIPT
+  ISS170 Group 10 | AM15 | July 1, 2026
+═══════════════════════════════════════════════════════════════════════════════
+
+BEFORE YOU START — CHECKLIST
+───────────────────────────────────────────────────────────────────────────────
+[ ] Run seed SQL in Supabase dashboard (supabase/migrations/007_demo_makati_seed.sql)
+[ ] Run `yarn expo start` in the /mobile folder → scan QR with Expo Go
+[ ] Run `yarn dev` in the /admin folder → open http://localhost:5173
+[ ] Have 2 devices or browser tabs ready (one for worker, one for business)
+[ ] Deploy Edge Functions: supabase functions deploy ai-match
+[ ] Set GEMINI_API_KEY secret in Supabase dashboard → Edge Functions → Secrets
+
+───────────────────────────────────────────────────────────────────────────────
+  DEMO ACCOUNTS  (password for all: KonekSync2026!)
+───────────────────────────────────────────────────────────────────────────────
+
+  WORKERS
+  ┌────────────────────────────────┬─────────────────────────────────────────┐
+  │ miguel@koneksync.ph            │ Miguel Ramos — ★4.9, Cashiering & CS   │
+  │ sofia@koneksync.ph             │ Sofia Lim — ★4.7, Barista & Food       │
+  │ renz@koneksync.ph              │ Renz Dela Torre — KYC pending, Events   │
+  │ claire@koneksync.ph            │ Claire Santos — ★4.5, Customer Service  │
+  └────────────────────────────────┴─────────────────────────────────────────┘
+
+  BUSINESSES
+  ┌────────────────────────────────┬─────────────────────────────────────────┐
+  │ ayala@koneksync.ph             │ Ayala Malls Makati (Retail)             │
+  │ greenbelt@koneksync.ph         │ Greenbelt Dining Group (F&B)            │
+  │ bgc@koneksync.ph               │ BGC Events Co. (Events)                 │
+  └────────────────────────────────┴─────────────────────────────────────────┘
+
+  ADMIN
+  ┌────────────────────────────────┐
+  │ admin@koneksync.ph             │  → Open admin panel at localhost:5173
+  └────────────────────────────────┘
+
+  OPEN SHIFTS ON JULY 1 (Makati/BGC)
+  ┌──────────────────────────────────────────┬──────────┬───────────────────┐
+  │ Cashier – 7.7 Mid-Year Sale              │ ₱130/hr  │ Ayala Center      │
+  │ Customer Service Floor Staff             │ ₱120/hr  │ Ayala Center      │
+  │ Barista – Weekend Rush                   │ ₱125/hr  │ Greenbelt 3       │
+  │ Food Service Crew – Lunch & Dinner       │ ₱115/hr  │ Greenbelt 3       │
+  │ Event Staff – BGC Weekend Market         │ ₱140/hr  │ BGC, 5th Ave      │
+  │ Promotions Team – Bonifacio High Street  │ ₱110/hr  │ BGC High Street   │
+  └──────────────────────────────────────────┴──────────┴───────────────────┘
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 1 — PLATFORM OVERVIEW (30 seconds)
+═══════════════════════════════════════════════════════════════════════════════
+
+SAY:
+  "KonekSync is an on-demand gig work platform designed for the Philippine
+  labor market. Workers find short-term shifts, apply instantly, check in via
+  QR code, and receive payment directly to GCash or Maya — all within the app.
+  Businesses post shifts, review pre-screened applicants, and release payment
+  with one tap. Let me show you how it works."
+
+SHOW: Landing screen (logo, tagline "On-demand shifts, instant pay.")
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 2 — WORKER EXPERIENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 2.1 — LOGIN
+────────────────
+ACTION: Tap "Looking for work" → enter miguel@koneksync.ph / KonekSync2026!
+SAY:
+  "Miguel is an experienced cashier with a 4.9-star reliability score, already
+  KYC-verified. Let's see what's available near him today in Makati."
+
+
+STEP 2.2 — BROWSE SHIFTS (Sector Filter)
+─────────────────────────────────────────
+ACTION: The feed loads — 6 shifts visible. Swipe the sector chips.
+SAY:
+  "The feed shows all open shifts within 5km. Workers can filter by sector —
+  Retail, Events, Food & Beverage — to find the right type of work quickly."
+
+ACTION: Tap "Retail" chip → only Ayala shifts shown.
+ACTION: Tap "All" to reset.
+
+
+STEP 2.3 — AI MATCHING (key feature demo)
+───────────────────────────────────────────
+ACTION: Tap the purple "✨ Find My Best Matches (AI)" button at the top.
+SAY:
+  "This is KonekSync's AI matching engine. Instead of just filtering by
+  distance, it uses Claude — Anthropic's AI — to analyze Miguel's skills,
+  ratings, and reliability score against every available shift and produces
+  a ranked list with a fit score out of 100."
+
+WAIT: ~3-5 seconds for the response.
+
+SAY (pointing at results):
+  "The cashier shift at Ayala scores highest — skill match, pay, and schedule
+  all align. Each card shows why it's a good fit in plain language. Miguel
+  didn't have to search — the best shift found him."
+
+ACTION: Tap "Clear" to return to normal view.
+
+
+STEP 2.4 — APPLY FOR A SHIFT
+──────────────────────────────
+ACTION: Tap "Cashier – 7.7 Mid-Year Sale" card.
+SAY:
+  "Let's open this shift. Miguel can see the full description, pay breakdown,
+  number of slots remaining, and the exact location."
+
+ACTION: Scroll down to the MicroShield insurance toggle.
+SAY:
+  "Before applying, Miguel can opt into MicroShield micro-insurance — ₱10
+  deducted from earnings — which gives ₱50,000 coverage for on-site injuries
+  for the duration of the shift."
+
+ACTION: Toggle it ON → read the coverage notice → toggle OFF (keep it clean).
+ACTION: Tap "Apply" → confirm.
+SAY:
+  "Application submitted. Ayala Malls will now see Miguel at the top of their
+  applicant queue."
+
+
+STEP 2.5 — IN-APP CHAT
+────────────────────────
+ACTION: Go to My Shifts → tap the approved Barista shift (Sofia's — or use Miguel's pending one with the chat seeded).
+SAY:
+  "Once applied, workers and businesses can message each other through the
+  built-in chat — no sharing personal numbers. Real-time, linked to the
+  specific shift application."
+
+ACTION: Show the existing chat messages from Ayala confirming arrival instructions.
+
+
+STEP 2.6 — NOTIFICATION CENTER
+────────────────────────────────
+ACTION: Tap the 🔔 bell icon in the header.
+SAY:
+  "The notification center keeps a history of every alert — new shifts, payment
+  releases, dispute updates — so nothing gets lost when a push notification
+  is dismissed."
+
+ACTION: Tap one notification to mark it as read. Show "Mark all read."
+
+
+STEP 2.7 — SKILLS & CERTIFICATIONS
+─────────────────────────────────────
+ACTION: Go to Profile → Skills.
+SAY:
+  "Workers build their verified skill profile here. Each skill can have an
+  uploaded certification — a scanned TESDA certificate or training completion
+  card. Verified skills unlock higher-paying specialized shifts."
+
+
+STEP 2.8 — KYC DOCUMENT UPLOAD
+────────────────────────────────
+ACTION: Show the KYC screen (Profile → KYC or navigate for Renz's pending account).
+SAY:
+  "KYC verification is required to receive payments. Workers upload their
+  government ID — driver's license, passport, or UMID — front and back, plus
+  their TIN. The admin reviews and approves it. Once verified, they
+  automatically receive three zero-fee cashouts as a welcome perk."
+
+
+STEP 2.9 — FEE BREAKDOWN
+──────────────────────────
+ACTION: Go to Earnings tab → tap "How payouts work →"
+SAY:
+  "Full transparency on fees. The platform takes 5%. Workers see the exact
+  gross, fee deduction, and net — before they even apply. First three payouts
+  are zero-fee after KYC approval."
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 3 — BUSINESS EXPERIENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 3.1 — LOGIN AS BUSINESS
+──────────────────────────────
+ACTION: Log out of worker. Tap "Hiring workers" → ayala@koneksync.ph / KonekSync2026!
+SAY:
+  "Now let's look at the business side. Patricia manages staffing for Ayala
+  Malls Makati."
+
+
+STEP 3.2 — DASHBOARD
+──────────────────────
+ACTION: Dashboard loads — shows active shifts, pending applications, quick stats.
+SAY:
+  "The business dashboard shows all active listings and pending applications
+  at a glance. Patricia can see that Miguel Ramos just applied."
+
+
+STEP 3.3 — REVIEW APPLICANTS
+──────────────────────────────
+ACTION: Tap the Cashier shift → applicants list → tap Miguel's card.
+SAY:
+  "Each applicant shows their reliability score, average rating, total shifts
+  completed, and KYC verification badge. Miguel: 4.9 stars, verified, 22
+  ratings. Patricia can make an informed decision instantly."
+
+ACTION: Tap "Approve" → confirm.
+SAY:
+  "Application approved. Miguel gets a push notification immediately."
+
+
+STEP 3.4 — POST A NEW SHIFT
+─────────────────────────────
+ACTION: Go to Post Shift tab.
+SAY:
+  "Posting a shift takes under a minute. Fill the title, description, required
+  skill, hourly rate, slots, and date. The sector tag ensures the shift reaches
+  the right workers through the filter."
+
+ACTION: Fill a quick demo shift (no need to submit unless desired):
+  - Title: "Stockroom Staff – Restock Night"
+  - Skill: Inventory Management
+  - Rate: ₱125/hr
+  - Date: July 1, 9pm – July 2, 2am
+  - Sector: Retail
+SAY:
+  "As soon as this is posted, the matching engine notifies eligible workers
+  within 5km automatically."
+
+
+STEP 3.5 — RELEASE PAYMENT
+────────────────────────────
+ACTION: Go to Payments tab → find completed shift "Cashier – Pre-Sale Setup Day."
+SAY:
+  "After a completed shift, the business releases payment here. The system
+  calculates the gross, deducts the 5% platform fee, and queues the net
+  amount to the worker's GCash or Maya. Miguel received ₱988 for an 8-hour
+  shift at ₱130/hr."
+
+
+STEP 3.6 — RATE WORKER
+────────────────────────
+ACTION: On completed shift → tap "Rate Worker."
+SAY:
+  "Both sides rate each other after every shift — a dual-rating system that
+  builds trust and accountability on both ends of the marketplace."
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 4 — DISPUTES
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 4.1 — WORKER FILES A DISPUTE
+────────────────────────────────────
+ACTION: Log in as renz@koneksync.ph. Go to My Shifts → completed shift → "Report an Issue."
+SAY:
+  "Renz was underpaid for his June 27 shift — paid for 6 hours when he worked
+  8. He can file a dispute directly in the app: select a category, describe the
+  issue, and submit. The GPS location logs and QR check-in timestamps are
+  on record."
+
+ACTION: Show the existing open dispute with its description and status badge.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 5 — ADMIN DASHBOARD  (switch to browser: localhost:5173)
+═══════════════════════════════════════════════════════════════════════════════
+
+STEP 5.1 — LOGIN
+──────────────────
+ACTION: Open browser → localhost:5173 → login with admin@koneksync.ph / KonekSync2026!
+SAY:
+  "The admin panel is a separate web dashboard for the KonekSync operations
+  team."
+
+
+STEP 5.2 — PLATFORM OVERVIEW
+──────────────────────────────
+ACTION: Dashboard loads — metrics cards (total workers, businesses, shifts, revenue).
+SAY:
+  "At a glance: total registered users, active listings, platform revenue from
+  fees, and pending items that need attention."
+
+
+STEP 5.3 — KYC REVIEW QUEUE
+─────────────────────────────
+ACTION: Go to Users → filter by KYC status "pending" → find Renz Dela Torre.
+SAY:
+  "This is the KYC queue. Renz uploaded his ID — the admin can view the
+  document, check the TIN, and approve or reject. Approval triggers the
+  three zero-fee cashout perk automatically."
+
+ACTION: Click Approve.
+SAY:
+  "Renz is now verified and can receive payments."
+
+
+STEP 5.4 — DISPUTE RESOLUTION
+───────────────────────────────
+ACTION: Go to Disputes → open Renz's dispute.
+SAY:
+  "The admin sees the full dispute context — worker, business, reason, and
+  description. They can review the GPS logs and QR timestamps, write a
+  resolution note, and mark it resolved or dismissed."
+
+ACTION: Enter a resolution note and change status to "under_review."
+
+
+STEP 5.5 — ANALYTICS
+──────────────────────
+ACTION: Go to Analytics tab.
+SAY:
+  "The analytics view shows platform health over time — shift volume, revenue
+  trends, top sectors, and worker activity. This informs decisions like which
+  industries to target for the next acquisition campaign."
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  PART 6 — CLOSING
+═══════════════════════════════════════════════════════════════════════════════
+
+SAY:
+  "To summarize: KonekSync connects verified gig workers in Makati and Metro
+  Manila with businesses that need on-demand staff — with real-time matching,
+  AI-powered ranking, QR-based attendance, dispute protection, and instant
+  digital payouts.
+
+  The platform addresses three core problems in the Philippine gig economy:
+  1. Workers lack access to legitimate, verified short-term work.
+  2. Businesses struggle to find pre-screened, reliable staff quickly.
+  3. Both sides have no protection when things go wrong.
+
+  KonekSync solves all three."
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  QUICK REFERENCE — IF SOMETHING GOES WRONG
+═══════════════════════════════════════════════════════════════════════════════
+
+Shifts not showing on feed?
+  → Make sure location permission is granted and you're "near" Makati.
+  → Or manually set mock location to 14.5565, 121.0244 (Ayala Center) in dev tools.
+
+AI matching button shows error?
+  → Check that ANTHROPIC_API_KEY is set in Supabase Edge Function secrets.
+  → Fallback: show sector filters instead and explain ranking is API-dependent.
+
+Admin panel blank after login?
+  → Check that admin@koneksync.ph has role = 'admin' in profiles table.
+
+Chat messages not loading?
+  → Supabase Realtime must be enabled for the messages table in the dashboard.
+
+Expo Go can't connect?
+  → Make sure phone and laptop are on the same Wi-Fi network.
+  → Run `yarn expo start --tunnel` as fallback.
+
+═══════════════════════════════════════════════════════════════════════════════

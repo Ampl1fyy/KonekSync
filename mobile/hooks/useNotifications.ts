@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Notification } from '../types';
 
@@ -9,6 +9,9 @@ export function useNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount]     = useState(0);
   const [loading, setLoading]             = useState(true);
+  // Unique channel name per hook instance so multiple subscribers don't
+  // share (and accidentally remove) the same Supabase Realtime channel.
+  const channelName = useRef(`notifications:${userId}:${Math.random().toString(36).slice(2)}`).current;
 
   const fetch = useCallback(async () => {
     if (!userId) return;
@@ -31,7 +34,7 @@ export function useNotifications(userId: string) {
 
     // Real-time: push new rows straight to top of list
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

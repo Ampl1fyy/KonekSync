@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { supabaseAdmin as supabase } from '../lib/supabase';
+import { useState } from 'react';
 import { format } from 'date-fns';
 
 type KYCStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
@@ -23,31 +22,34 @@ const KYC_COLORS: Record<KYCStatus, string> = {
   rejected: 'bg-red-100 text-red-600',
 };
 
+const DEMO_USERS: Profile[] = [
+  { id: '4c3f30f0', full_name: 'KonekSync Admin',   role: 'admin',    phone: null,           kyc_status: 'verified',   reliability_score: 5.0, average_rating: 5.0, is_active: true,  created_at: '2026-06-01T00:00:00Z' },
+  { id: '34dd5228', full_name: 'Patricia Ayala',     role: 'business', phone: '+63 917 100 0001', kyc_status: 'verified',   reliability_score: 5.0, average_rating: 4.8, is_active: true,  created_at: '2026-06-10T00:00:00Z' },
+  { id: '48973b02', full_name: 'Marco Villanueva',   role: 'business', phone: '+63 917 100 0002', kyc_status: 'verified',   reliability_score: 5.0, average_rating: 4.6, is_active: true,  created_at: '2026-06-10T00:00:00Z' },
+  { id: '71d5163a', full_name: 'Jose Santos',        role: 'business', phone: '+63 917 100 0003', kyc_status: 'verified',   reliability_score: 5.0, average_rating: 4.9, is_active: true,  created_at: '2026-06-10T00:00:00Z' },
+  { id: '20c148e6', full_name: 'Miguel Reyes',       role: 'worker',   phone: '+63 912 345 6789', kyc_status: 'verified',   reliability_score: 4.8, average_rating: 4.7, is_active: true,  created_at: '2026-06-15T00:00:00Z' },
+  { id: 'eb06b0a7', full_name: 'Sofia Dela Cruz',    role: 'worker',   phone: '+63 912 345 6790', kyc_status: 'verified',   reliability_score: 4.9, average_rating: 4.9, is_active: true,  created_at: '2026-06-15T00:00:00Z' },
+  { id: '68e84bac', full_name: 'Renz Morales',       role: 'worker',   phone: '+63 912 345 6791', kyc_status: 'pending',    reliability_score: 4.2, average_rating: 4.0, is_active: true,  created_at: '2026-06-20T00:00:00Z' },
+  { id: '21afde54', full_name: 'Claire Tan',         role: 'worker',   phone: '+63 912 345 6792', kyc_status: 'unverified', reliability_score: 4.5, average_rating: 0.0, is_active: true,  created_at: '2026-06-22T00:00:00Z' },
+];
+
 export default function Users() {
-  const [users, setUsers] = useState<Profile[]>([]);
+  const [users, setUsers] = useState<Profile[]>(DEMO_USERS);
   const [filter, setFilter] = useState<'all' | 'worker' | 'business'>('all');
   const [kycFilter, setKycFilter] = useState<'all' | KYCStatus>('all');
-  const [loading, setLoading] = useState(true);
 
-  async function load() {
-    let q = supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    if (filter !== 'all') q = q.eq('role', filter);
-    if (kycFilter !== 'all') q = q.eq('kyc_status', kycFilter);
-    const { data } = await q;
-    setUsers(data ?? []);
-    setLoading(false);
+  const displayed = users.filter((u) => {
+    if (filter !== 'all' && u.role !== filter) return false;
+    if (kycFilter !== 'all' && u.kyc_status !== kycFilter) return false;
+    return true;
+  });
+
+  function updateKYC(userId: string, status: KYCStatus) {
+    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, kyc_status: status } : u));
   }
 
-  useEffect(() => { load(); }, [filter, kycFilter]);
-
-  async function updateKYC(userId: string, status: KYCStatus) {
-    await supabase.from('profiles').update({ kyc_status: status }).eq('id', userId);
-    load();
-  }
-
-  async function toggleActive(userId: string, current: boolean) {
-    await supabase.from('profiles').update({ is_active: !current }).eq('id', userId);
-    load();
+  function toggleActive(userId: string, current: boolean) {
+    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, is_active: !current } : u));
   }
 
   return (
@@ -91,11 +93,9 @@ export default function Users() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
-            ) : users.length === 0 ? (
+            {displayed.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-8 text-gray-400">No users found.</td></tr>
-            ) : users.map((u) => (
+            ) : displayed.map((u) => (
               <tr key={u.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-4 py-3">
                   <div className="font-medium text-gray-800">{u.full_name}</div>
@@ -110,7 +110,7 @@ export default function Users() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-gray-700">
-                  ⭐ {u.average_rating?.toFixed(1) ?? '—'}
+                  {u.average_rating > 0 ? `⭐ ${u.average_rating.toFixed(1)}` : '—'}
                 </td>
                 <td className="px-4 py-3 text-gray-400 text-xs">
                   {format(new Date(u.created_at), 'MMM d, yyyy')}
@@ -119,14 +119,8 @@ export default function Users() {
                   <div className="flex gap-2">
                     {u.kyc_status === 'pending' && (
                       <>
-                        <button
-                          onClick={() => updateKYC(u.id, 'verified')}
-                          className="text-xs text-green-600 hover:underline font-medium"
-                        >Verify</button>
-                        <button
-                          onClick={() => updateKYC(u.id, 'rejected')}
-                          className="text-xs text-red-500 hover:underline font-medium"
-                        >Reject</button>
+                        <button onClick={() => updateKYC(u.id, 'verified')} className="text-xs text-green-600 hover:underline font-medium">Verify</button>
+                        <button onClick={() => updateKYC(u.id, 'rejected')} className="text-xs text-red-500 hover:underline font-medium">Reject</button>
                       </>
                     )}
                     <button

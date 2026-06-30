@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function AuthLanding() {
@@ -6,7 +6,12 @@ export default function AuthLanding() {
 
   return (
     <View className="flex-1 bg-white px-6 pb-10" style={{ paddingTop: 100 }}>
-      <View className="mb-16">
+      <View className="mb-16 items-center">
+        <Image
+          source={require('../../assets/logo.png')}
+          style={{ width: 100, height: 100, marginBottom: 16 }}
+          resizeMode="contain"
+        />
         <Text className="text-4xl font-bold text-primary-600">KonekSync</Text>
         <Text className="text-gray-500 mt-2 text-base">On-demand shifts, instant pay.</Text>
       </View>
@@ -25,11 +30,11 @@ export default function AuthLanding() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-primary-600 rounded-2xl p-5"
+          className="bg-secondary-500 rounded-2xl p-5"
           onPress={() => router.push('/(auth)/business-login')}
         >
           <Text className="text-white text-lg font-bold mb-1">Hiring workers</Text>
-          <Text className="text-indigo-200 text-sm">Post shifts and manage your team</Text>
+          <Text className="text-secondary-100 text-sm">Post shifts and manage your team</Text>
         </TouchableOpacity>
       </View>
     </View>

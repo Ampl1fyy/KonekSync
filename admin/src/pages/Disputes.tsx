@@ -1,46 +1,40 @@
-import { useEffect, useState } from 'react';
-import { supabaseAdmin as supabase } from '../lib/supabase';
+import { useState } from 'react';
 import { format } from 'date-fns';
 
 type DisputeStatus = 'open' | 'under_review' | 'resolved' | 'dismissed';
 
+const DEMO_DISPUTES = [
+  {
+    id: 'd1',
+    profiles: { full_name: 'Renz Morales' },
+    applications: { shifts: { title: 'Event Usher – BGC' } },
+    reason: 'Underpayment',
+    description: 'I worked 4 hours but was only paid for 3. The business owner said the last hour was "orientation" and not billable, but this was not disclosed beforehand.',
+    status: 'open' as DisputeStatus,
+    created_at: '2026-06-29T14:00:00+08:00',
+  },
+];
+
+const statusColors: Record<DisputeStatus, string> = {
+  open: 'bg-red-100 text-red-700',
+  under_review: 'bg-yellow-100 text-yellow-700',
+  resolved: 'bg-green-100 text-green-700',
+  dismissed: 'bg-gray-100 text-gray-500',
+};
+
 export default function Disputes() {
-  const [disputes, setDisputes] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState(DEMO_DISPUTES);
   const [filter, setFilter] = useState<'all' | DisputeStatus>('open');
-  const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<any | null>(null);
+  const [selected, setSelected] = useState<typeof DEMO_DISPUTES[0] | null>(null);
   const [resolution, setResolution] = useState('');
 
-  async function load() {
-    let q = supabase
-      .from('disputes')
-      .select('*, profiles!raised_by(full_name), applications(shift_id, shifts(title))')
-      .order('created_at', { ascending: false });
-    if (filter !== 'all') q = q.eq('status', filter);
-    const { data } = await q;
-    setDisputes(data ?? []);
-    setLoading(false);
-  }
+  const displayed = filter === 'all' ? disputes : disputes.filter((d) => d.status === filter);
 
-  useEffect(() => { load(); }, [filter]);
-
-  async function resolve(id: string, status: 'resolved' | 'dismissed') {
-    await supabase.from('disputes').update({
-      status,
-      resolution_note: resolution,
-      resolved_at: new Date().toISOString(),
-    }).eq('id', id);
+  function resolve(id: string, status: 'resolved' | 'dismissed') {
+    setDisputes((prev) => prev.map((d) => d.id === id ? { ...d, status } : d));
     setSelected(null);
     setResolution('');
-    load();
   }
-
-  const statusColors: Record<DisputeStatus, string> = {
-    open: 'bg-red-100 text-red-700',
-    under_review: 'bg-yellow-100 text-yellow-700',
-    resolved: 'bg-green-100 text-green-700',
-    dismissed: 'bg-gray-100 text-gray-500',
-  };
 
   return (
     <div className="p-6">
@@ -72,27 +66,22 @@ export default function Disputes() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan={6} className="text-center py-8 text-gray-400">Loading...</td></tr>
-            ) : disputes.length === 0 ? (
+            {displayed.length === 0 ? (
               <tr><td colSpan={6} className="text-center py-8 text-gray-400">No disputes found.</td></tr>
-            ) : disputes.map((d) => (
+            ) : displayed.map((d) => (
               <tr key={d.id} className="border-b border-gray-50 hover:bg-gray-50">
                 <td className="px-4 py-3 text-gray-800 font-medium">{d.profiles?.full_name ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600 text-xs">{d.applications?.shifts?.title ?? '—'}</td>
                 <td className="px-4 py-3 text-gray-600 max-w-xs truncate">{d.reason}</td>
                 <td className="px-4 py-3 text-gray-400 text-xs">{format(new Date(d.created_at), 'MMM d, yyyy')}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${statusColors[d.status as DisputeStatus] ?? 'bg-gray-100'}`}>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium capitalize ${statusColors[d.status]}`}>
                     {d.status.replace('_', ' ')}
                   </span>
                 </td>
                 <td className="px-4 py-3">
                   {(d.status === 'open' || d.status === 'under_review') && (
-                    <button
-                      onClick={() => setSelected(d)}
-                      className="text-xs text-primary-600 hover:underline font-medium"
-                    >Review</button>
+                    <button onClick={() => setSelected(d)} className="text-xs text-primary-600 hover:underline font-medium">Review</button>
                   )}
                 </td>
               </tr>
@@ -101,18 +90,15 @@ export default function Disputes() {
         </table>
       </div>
 
-      {/* Review Modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
             <h3 className="text-lg font-bold text-gray-800 mb-1">Review Dispute</h3>
             <p className="text-sm text-gray-500 mb-4">Raised by: {selected.profiles?.full_name}</p>
-
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
               <p className="text-sm font-medium text-gray-700 mb-1">{selected.reason}</p>
               {selected.description && <p className="text-sm text-gray-600">{selected.description}</p>}
             </div>
-
             <label className="block text-sm font-medium text-gray-700 mb-1">Resolution Note</label>
             <textarea
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -121,20 +107,10 @@ export default function Disputes() {
               value={resolution}
               onChange={(e) => setResolution(e.target.value)}
             />
-
             <div className="flex gap-3">
-              <button
-                onClick={() => resolve(selected.id, 'resolved')}
-                className="flex-1 bg-green-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-green-700"
-              >Mark Resolved</button>
-              <button
-                onClick={() => resolve(selected.id, 'dismissed')}
-                className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50"
-              >Dismiss</button>
-              <button
-                onClick={() => setSelected(null)}
-                className="px-4 text-gray-400 hover:text-gray-600 text-sm"
-              >Cancel</button>
+              <button onClick={() => resolve(selected.id, 'resolved')} className="flex-1 bg-green-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-green-700">Mark Resolved</button>
+              <button onClick={() => resolve(selected.id, 'dismissed')} className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50">Dismiss</button>
+              <button onClick={() => setSelected(null)} className="px-4 text-gray-400 hover:text-gray-600 text-sm">Cancel</button>
             </div>
           </div>
         </div>
